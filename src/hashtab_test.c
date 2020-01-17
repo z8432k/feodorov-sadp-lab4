@@ -22,9 +22,26 @@ int main(void) {
     fprintf(stat, "%zu;%u\n", i, result[i]);
   }
 
-  free(key);
   free(result);
   fclose(stat);
+
+  HashTab htab = allocHashTable();
+
+  hashTabSet(htab, genKey(key));
+  hashTabSet(htab, "34SS43");
+  hashTabSet(htab, genKey(key));
+
+  HashKey res;
+  hashTabGet(htab, "34SS43", &res);
+
+  ssize_t deleted = hasTabDel(htab, "34SS43");
+
+  deleted = hasTabDel(htab, "34SS43");
+
+  free(key);
+  free(res);
+
+  hashTabFree(htab);
 
   exit(EXIT_SUCCESS);
 }
