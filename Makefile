@@ -1,4 +1,3 @@
-CC = gcc-9
 PROG = hashtab_test
 CFLAGS = -Wall -Wextra -Wpedantic -ggdb -std=gnu11 -O0
 LDLIBS =

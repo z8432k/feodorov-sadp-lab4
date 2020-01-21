@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include "include/hashtab.h"
 
+void seed() {
+
+}
+
+
 int main(void) {
   printf("== Hash table implementation. ==\n\n");
 

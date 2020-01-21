@@ -3,11 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 
+
 size_t hash(HashKey key) {
   size_t h = 0;
-  unsigned char *p;
+  guchar *p;
 
-  for (p = (unsigned char *) key; *p != '\0'; p++) {
+  for (p = (guchar *) key; *p != '\0'; p++) {
     h = h + *p * *p;
   }
 
@@ -15,9 +16,9 @@ size_t hash(HashKey key) {
 }
 
 HashTab allocHashTable() {
-  HashKey table = (HashKey) calloc(HASH_TAB_SIZE, sizeof(char) * HASH_TAB_KEY_SIZE);
+  HashTab tab = (HashTab) calloc(HASH_TAB_SIZE, sizeof(HashTabItem_t) * HASH_TAB_KEY_SIZE);
 
-  return table;
+  return tab;
 }
 
 inline static char getNumber() {
@@ -41,9 +42,10 @@ HashKey allocKey() {
   return calloc(HASH_TAB_KEY_SIZE, sizeof(char));
 }
 
-HashKey genKey(HashKey key) {
-  if (!key) {
-    key = allocKey();
+void genKey(HashKey key) {
+  if (key == NULL) {
+    fprintf(2, "Fail. NULL key pointer.\n");
+    exit(1);
   }
 
   HashKey orig = key;
