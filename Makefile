@@ -1,7 +1,7 @@
 CC = gcc-9
 PROG = hashtab_test
-CFLAGS = -Wall -Wextra -Wpedantic -ggdb -std=gnu11 -O0
-LDLIBS =
+CFLAGS = -Wall -Wextra -Wpedantic -ggdb -std=gnu11 -O0 `pkg-config --cflags glib-2.0`
+LDLIBS = `pkg-config --libs glib-2.0`
 
 default: bin/$(PROG)
 

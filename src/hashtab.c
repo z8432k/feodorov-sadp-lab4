@@ -15,7 +15,7 @@ size_t hash(HashKey key) {
 }
 
 HashTab allocHashTable() {
-  HashKey table = (HashKey) calloc(HASH_TAB_SIZE, sizeof(char) * HASH_TAB_KEY_SIZE);
+  HashKey table = (HashKey) calloc(HASH_TAB_SIZE, sizeof(char) * HASH_TAB_ROW_SIZE);
 
   return table;
 }
@@ -71,14 +71,36 @@ HashKey genKey(HashKey key) {
   return key;
 }
 
+bool isVacant(HashKey key) {
+  return key[0] == 0 || key[KEY_FLAG_POS];
+}
+
+static inline bool isDeleted(HashKey key) {
+  return key[KEY_FLAG_POS];
+}
+
+static inline bool isBingo(HashKey key, HashKey target) {
+  return !isVacant(key) && !strncmp(key, target, HASH_TAB_KEY_SIZE);
+}
+
+static inline void markDeleted(HashKey key) {
+  key[KEY_FLAG_POS] = 1;
+}
+
+static setData(HashKey key, HashKey data) {
+  strncpy(key, data, HASH_TAB_KEY_SIZE);
+}
+
 ssize_t hashTabSet(HashTab tab, HashKey key) {
-  size_t idx = hash(key) * HASH_TAB_KEY_SIZE;
-  size_t step = 1;
+  size_t idx = hash(key);
+  size_t step = 1, loop = 1;
 
-
+  HashKey current;
   do {
-    if (!tab[idx]) {
-      strncpy(&tab[idx], key, HASH_TAB_KEY_SIZE - 1);
+    current = &tab[idx];
+
+    if (isVacant(current)) {
+      setData(current, key);
       return idx;
       break;
     }
@@ -87,27 +109,34 @@ ssize_t hashTabSet(HashTab tab, HashKey key) {
     }
 
     step++;
-  } while (idx < HASH_TAB_SIZE);
+
+    if (idx >= HASH_TAB_SIZE) {
+      idx = step;
+      loop++;
+    }
+  } while (loop < HASH_MAX_LOOP);
 
   return -1;
 }
 
 ssize_t hashTabGet(HashTab tab, HashKey key, HashKey *result) {
   size_t idx = hash(key);
-  size_t step = 1;
+  size_t step = 1, loop = 1;
 
+  HashKey current;
   do {
-    if (tab[idx * HASH_TAB_KEY_SIZE] > 0) {
+    current = &tab[idx];
+
+    if (isBingo(current, key)) {
       if (result) {
         HashKey data = allocKey();
-        strncpy(data, &tab[idx], HASH_TAB_KEY_SIZE - 1);
+        setData(data, current);
         *result = data;
       }
 
       break;
     }
-    else if (tab[idx * HASH_TAB_KEY_SIZE] < 0)
-    {
+    else if (isDeleted(current)) {
       idx = idx + step * step;
     }
     else {
@@ -115,7 +144,12 @@ ssize_t hashTabGet(HashTab tab, HashKey key, HashKey *result) {
     }
 
     step++;
-  } while (idx < HASH_TAB_SIZE);
+
+    if (idx >= HASH_TAB_SIZE) {
+      idx = step;
+      loop++;
+    }
+  } while (loop < HASH_MAX_LOOP);
 
   return idx;
 }
@@ -124,12 +158,21 @@ void hashTabFree(HashTab tab) {
   free(tab);
 }
 
-ssize_t hasTabDel(HashTab tab, HashKey key) {
+bool hasTabDel(HashTab tab, HashKey key) {
   ssize_t idx = hashTabGet(tab, key, NULL);
 
-  if (idx >= 0) {
-    tab[idx * HASH_TAB_KEY_SIZE] = -1;
-  }
+  if (idx > 0) {
+    HashKey target = &tab[idx];
 
-  return idx;
+    bool already = isDeleted(target);
+
+    if (!already) {
+      markDeleted(target);
+    }
+
+    return !already;
+  }
+  else {
+    return false;
+  }
 }
