@@ -52,3 +52,5 @@ Mkfile.old
 dkms.conf
 stat.csv
 src/test.cc
+cmake-build-*/
+bin/
